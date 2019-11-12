@@ -2,9 +2,10 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import StepZilla from 'react-stepzilla';
+import StepZilla from './main';
 
 import ClassComponent from './ClassComponent';
+import ClassOldSchool from './ClassOldSchool';
 import PureComponent from './PureComponent';
 import HooksNoValidation from './HooksNoValidation';
 import HooksWithValidation from './HooksWithValidation';
@@ -12,11 +13,12 @@ import End from './End';
  
 function App() {
   const steps = [
-    {name: 'Step 1', component: <ClassComponent />},
-    {name: 'Step 2', component: <PureComponent/>},
-    {name: 'Step 3', component: <HooksNoValidation />},
-    {name: 'Step 4', component: <HooksWithValidation />},
-    {name: 'Step 5', component: <End />},
+    {name: 'HooksWithValidation', component: <HooksWithValidation />},
+    {name: 'ClassComponent', component: <ClassComponent />},
+    {name: 'ClassOldSchoolComponent', component: <ClassOldSchool />},
+    {name: 'PureComponent', component: <PureComponent/>},
+    {name: 'HooksNoValidation', component: <HooksNoValidation />},
+    {name: 'End', component: <End />},
   ]
 
   return (

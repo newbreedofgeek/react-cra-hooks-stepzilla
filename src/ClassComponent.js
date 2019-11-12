@@ -17,7 +17,7 @@ export default class ClassComponent extends React.Component {
 
   render() {
     return <>
-      I am a traditional ClassComponent: My validation state is {this.state.valid.toString()}
+      I am a traditional ClassComponent: My validation state is {this.state.valid.toString().toUpperCase()}
       <br />
       <div className="toggle" onClick={this.toggleValidState}>[Change validation state]</div>
     </>
