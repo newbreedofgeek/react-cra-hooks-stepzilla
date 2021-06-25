@@ -2,7 +2,8 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import StepZilla from './main';
+// import StepZilla from 'react-stepzilla';
+import StepZilla from './sandbox/StepZilla';
 
 import ClassComponent from './ClassComponent';
 import ClassOldSchool from './ClassOldSchool';
