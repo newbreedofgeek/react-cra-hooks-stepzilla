@@ -21,6 +21,15 @@
   color: #09d3ac;
 }
 
+#debug-panel {
+  padding: 3rem;
+  background-color: chocolate;
+  color: #FFF;
+  font-size: 1.5rem;
+  width: 80%;
+  margin: 3rem auto;
+}
+
 button {
   padding: 1rem;
   margin: 1rem;

@@ -19,8 +19,6 @@ export default class StepZilla extends Component {
     this.nextTextOnFinalActionStep = (this.props.nextTextOnFinalActionStep) ? this.props.nextTextOnFinalActionStep : this.props.nextButtonText;
 
     this.applyValidationFlagsToSteps();
-
-    this.myRef = React.createRef();
   }
 
   // extend the "steps" array with flags to indicate if they have been validated
@@ -52,7 +50,7 @@ export default class StepZilla extends Component {
       }
     }
 
-    return { current: indx, styles };
+    return { styles };
   }
 
   getPrevNextBtnLayout(currentStep) {
@@ -233,7 +231,6 @@ export default class StepZilla extends Component {
     if (this.props.dontValidate) {
       proceed = true;
     } else {
-      debugger;
       if (skipValidationExecution) {
         // we are moving backwards in steps, in this case dont validate as it means the user is not commiting to "save"
         proceed = true;
@@ -295,33 +292,17 @@ export default class StepZilla extends Component {
         this.jumpToStep(t);
       }
     };
-    debugger;
-    const componentPointer = this.props.steps[this.state.compState].component;
 
-    console.group();
-    console.log(typeof componentPointer);
-    console.log('*************');
-    console.log(componentPointer);
-    
-    let compToRender = null;
+    const componentPointer = this.props.steps[this.state.compState].component;
 
     // can only update refs if its a regular React component (not a pure component), so lets check that
     if (componentPointer instanceof Component
       || (componentPointer.type && componentPointer.type.prototype instanceof Component)) {
       // unit test deteceted that instanceof Component can be in either of these locations so test both (not sure why this is the case)
       cloneExtensions.ref = 'activeComponent';
-
-      compToRender = React.cloneElement(componentPointer, cloneExtensions);
-    } else {
-      cloneExtensions.ref = this.myRef;
-      compToRender = React.cloneElement(componentPointer, cloneExtensions);
     }
 
-    console.log(compToRender);
-    console.log('this.refs.activeComponent');
-    console.log(this.refs.activeComponent);
-    console.log('*************');
-    console.groupEnd();
+    const compToRender = React.cloneElement(componentPointer, cloneExtensions);
 
     return (
       <div className="multi-step" onKeyDown={(evt) => { this.handleKeyDown(evt); }}>

@@ -1,42 +1,21 @@
-import React, { Component, useEffect, useState, useRef } from 'react';
-// import PropTypes from 'prop-types';
+import React, {
+  Component, useEffect, useState, useRef
+} from 'react';
+import PropTypes from 'prop-types';
 import Promise from 'promise';
 
 export default function StepZilla(props) {
   const [compState, setCompState] = useState(props.startAtStep);
-  const [navState, setNavState] = useState(0);
+  const [navState, setNavState] = useState(null);
 
   const hidden = {
     display: 'none'
   };
 
-  // if user did not give a custom nextTextOnFinalActionStep, the nextButtonText becomes the default
-  let nextTextOnFinalActionStep;
-
   useEffect(() => {
     console.log('------- IN SANDBOX DEV MODE -------');
-
     setNavState(getNavStates(props.startAtStep, props.steps.length));
-
-    nextTextOnFinalActionStep = (props.nextTextOnFinalActionStep) ? props.nextTextOnFinalActionStep : props.nextButtonText;
-
-    applyValidationFlagsToSteps();
   }, []);
-
-  // extend the "steps" array with flags to indicate if they have been validated
-  const applyValidationFlagsToSteps = () => {
-    props.steps.map((i, idx) => {
-      if (props.dontValidate) {
-        i.validated = true;
-      } else {
-        // check if isValidated was exposed in the step, if yes then set initial state as not validated (false) or vice versa
-        // if HOCValidation is used for the step then mark it as "requires to be validated. i.e. false"
-        i.validated = i.component.type && i.component.type.prototype && i.component.type.prototype.isValidated && isStepAtIndexHOCValidationBased(idx) ? false : true;
-      }
-
-      return i;
-    });
-  }
 
   // update the header nav states via classes so they can be styled via css
   const getNavStates = (indx, length) => {
@@ -53,7 +32,7 @@ export default function StepZilla(props) {
     }
 
     return { styles };
-  }
+  };
 
   const getPrevNextBtnLayout = (currentStep) => {
     // first set default values
@@ -68,7 +47,9 @@ export default function StepZilla(props) {
 
     // second to last step change next btn text if supplied as props
     if (currentStep === props.steps.length - 2) {
-      nextStepText = props.nextTextOnFinalActionStep || nextStepText;
+      // if user did not give a custom nextTextOnFinalActionStep, the nextButtonText becomes the default
+      const nextTextOnFinalActionStep = (props.nextTextOnFinalActionStep) ? props.nextTextOnFinalActionStep : props.nextButtonText;
+      nextStepText = nextTextOnFinalActionStep || nextStepText;
     }
 
     // last step hide next btn, hide previous btn if supplied as props
@@ -82,14 +63,14 @@ export default function StepZilla(props) {
       showNextBtn,
       nextStepText
     };
-  }
+  };
 
   // which step are we in?
   const checkNavState = (nextStep) => {
     if (props.onStepChange) {
       props.onStepChange(nextStep);
     }
-  }
+  };
 
   // set the nav state
   const adjustNavState = (next) => {
@@ -100,7 +81,7 @@ export default function StepZilla(props) {
     }
 
     checkNavState(next);
-  }
+  };
 
   // handles keydown on enter being pressed in any Child component input area. in this case it goes to the next (ignore textareas as they should allow line breaks)
   const handleKeyDown = (evt) => {
@@ -111,7 +92,7 @@ export default function StepZilla(props) {
         evt.preventDefault();
       }
     }
-  }
+  };
 
   // this utility method lets Child components invoke a direct jump to another step
   const jumpToStep = (evt) => {
@@ -186,7 +167,7 @@ export default function StepZilla(props) {
           }
         });
     }
-  }
+  };
 
   // move next via next button
   const next = () => {
@@ -212,19 +193,19 @@ export default function StepZilla(props) {
         // Promise based validation was a fail (i.e reject())
         updateStepValidationFlag(false);
       });
-  }
+  };
 
   // move behind via previous button
   const previous = () => {
     if (compState > 0) {
       adjustNavState(compState - 1);
     }
-  }
+  };
 
   // update step's validation flag
   const updateStepValidationFlag = (val = true) => {
     props.steps[compState].validated = val; // note: if a step component returns 'underfined' then treat as "true".
-  }
+  };
 
   const activeComponentRef = useRef(null);
 
@@ -252,32 +233,32 @@ export default function StepZilla(props) {
     }
 
     return proceed;
-  }
-
-  
+  };
 
   const isStepAtIndexHOCValidationBased = (stepIndex) => {
     return (props.hocValidationAppliedTo && props.hocValidationAppliedTo.length > 0 && props.hocValidationAppliedTo.indexOf(stepIndex) > -1);
-  }
+  };
 
   // a validation method is each step can be sync or async (Promise based), this utility abstracts the wrapper stepMoveAllowed to be Promise driven regardless of validation return type
   const abstractStepMoveAllowedToPromise = (movingBack) => {
     return Promise.resolve(stepMoveAllowed(movingBack));
-  }
+  };
 
   // get the classmame of steps
   const getClassName = (className, i) => {
-    if (navState.styles) {
-      let liClassName = `${className}-${navState.styles[i]}`;
+    let liClassName = '';
+
+    if (navState && navState.styles) {
+      liClassName = `${className}-${navState.styles[i]}`;
 
       // if step ui based navigation is disabled, then dont highlight step
       if (!props.stepsNavigation) {
         liClassName += ' no-hl';
       }
-  
-      return liClassName;
-    }    
-  }
+    }
+
+    return liClassName;
+  };
 
   // render the steps as stepsNavigation
   const renderSteps = () => {
@@ -287,7 +268,7 @@ export default function StepZilla(props) {
           <span>{props.steps[i].name}</span>
       </li>
     ));
-  }
+  };
 
   const { nextStepText, showNextBtn, showPreviousBtn } = getPrevNextBtnLayout(compState);
 
@@ -304,12 +285,24 @@ export default function StepZilla(props) {
   if (props.steps[compState]) {
     componentPointer = props.steps[compState].component;
 
-    // can only update refs if its a regular React component (not a pure component), so lets check that
+    // S: ref binding -----
+    // we need to bind a ref to it so we can use the imperitive "isValidated" method when needed to prevent navigation
+    // ... we only can do this if its a (1) React Class based component or (2) A Hooks based stateful component wrapped in forwardRef
+
+    // (1) can only update refs if its a regular React component (not a pure component - i.e. function components with no state), so lets check that
     if (componentPointer instanceof Component
       || (componentPointer.type && componentPointer.type.prototype instanceof Component)) {
       // unit test deteceted that instanceof Component can be in either of these locations so test both (not sure why this is the case)
       cloneExtensions.ref = activeComponentRef;
+    } else {
+      // (2) after react hooks was released, functional components can have state and therefore support refs
+      // ... we do this via forwardRefs. So we need to support this as well
+      // ... after testing, if both the below types are objects then it's a hooks function component wrapped in forwardRef
+      if (typeof componentPointer === 'object' && typeof componentPointer.type === 'object') {
+        cloneExtensions.ref = activeComponentRef;
+      }
     }
+    // E: ref binding -----
 
     compToRender = React.cloneElement(componentPointer, cloneExtensions);
   }
@@ -346,7 +339,38 @@ export default function StepZilla(props) {
           {nextStepText}
         </button>
       </div>
-    </div>
+      
+      <div id="debug-panel">
+        <b>Debug Panel</b>
+
+        <p>Props: </p>
+        <div>{`
+          showSteps: ${props.showSteps},
+          showNavigation: ${props.showNavigation},
+          stepsNavigation: ${props.stepsNavigation},
+          prevBtnOnLastStep: ${props.prevBtnOnLastStep},
+          dontValidate: ${props.dontValidate},
+          preventEnterSubmission: ${props.preventEnterSubmission},
+          startAtStep: ${props.startAtStep},
+          nextButtonText: ${props.nextButtonText},
+          nextButtonCls: ${props.nextButtonCls},
+          backButtonText: ${props.backButtonText},
+          backButtonCls: ${props.backButtonCls},
+          nextTextOnFinalActionStep: ${props.nextTextOnFinalActionStep},
+          onStepChange: ${props.onStepChange},
+          hocValidationAppliedTo: ${props.hocValidationAppliedTo}`}
+          </div>
+
+          <p>State: </p>
+
+          <div>{`
+            compState: ${compState},
+            navState: ${JSON.stringify(navState)}
+          `}
+          </div>
+      </div>
+    
+   </div>
   );
 }
 
@@ -365,25 +389,25 @@ StepZilla.defaultProps = {
   hocValidationAppliedTo: []
 };
 
-// StepZilla.propTypes = {
-//   steps: PropTypes.arrayOf(PropTypes.shape({
-//     name: PropTypes.oneOfType([
-//       PropTypes.string,
-//       PropTypes.object
-//     ]).isRequired,
-//     component: PropTypes.element.isRequired
-//   })).isRequired,
-//   showSteps: PropTypes.bool,
-//   showNavigation: PropTypes.bool,
-//   stepsNavigation: PropTypes.bool,
-//   prevBtnOnLastStep: PropTypes.bool,
-//   dontValidate: PropTypes.bool,
-//   preventEnterSubmission: PropTypes.bool,
-//   startAtStep: PropTypes.number,
-//   nextButtonText: PropTypes.string,
-//   nextButtonCls: PropTypes.string,
-//   backButtonCls: PropTypes.string,
-//   backButtonText: PropTypes.string,
-//   hocValidationAppliedTo: PropTypes.array,
-//   onStepChange: PropTypes.func
-// };
+StepZilla.propTypes = {
+  steps: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.object
+    ]).isRequired,
+    component: PropTypes.element.isRequired
+  })).isRequired,
+  showSteps: PropTypes.bool,
+  showNavigation: PropTypes.bool,
+  stepsNavigation: PropTypes.bool,
+  prevBtnOnLastStep: PropTypes.bool,
+  dontValidate: PropTypes.bool,
+  preventEnterSubmission: PropTypes.bool,
+  startAtStep: PropTypes.number,
+  nextButtonText: PropTypes.string,
+  nextButtonCls: PropTypes.string,
+  backButtonCls: PropTypes.string,
+  backButtonText: PropTypes.string,
+  hocValidationAppliedTo: PropTypes.array,
+  onStepChange: PropTypes.func
+};

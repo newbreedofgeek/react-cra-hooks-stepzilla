@@ -24,7 +24,7 @@ export default class ClassOldSchool extends Component {
 
   render() {
     return <>
-      I am a old school ClassComponent: My validation state is {this.state.valid.toString().toUpperCase()}
+      I am a old school ClassComponent (nothing special, it's and example of how plp used to write react components during the early years and bind methods to it) : My validation state is {this.state.valid.toString().toUpperCase()}
       <br />
       <div className="toggle" onClick={this.toggleValidState}>[Change validation state]</div>
     </>
